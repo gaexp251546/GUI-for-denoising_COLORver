@@ -31,13 +31,15 @@ Mat RedPicCPY_forUPSAMPLE;
 Mat ROI;
 int modeDC = 0;
 const int UPSAMPLERATE = 4;
+int ROIxBEGIN, ROIxEND, ROIyBEGIN, ROIyEND;
+//int ROIxBEGINforMOVE;//放大時移動圖片用
+//int ROIyBEGINforMOVE;
 
 void mymouse(int event, int x, int y, int flag, void* param)
 {
-	static int oldx, oldy, DownX, DownY, oldDownX, oldDownY,now_down = 0, eraserDown, ROIxBEGIN, ROIxEND, ROIyBEGIN, ROIyEND;
+	static int oldx, oldy, DownX, DownY, oldDownX, oldDownY,now_down = 0, eraserDown;
 	int XupsampleBEGIN = x - 50, YupsampleBEGIN = y - 50, XupsampleEND = x+50,YupsampleEND=y+50;
 
-	cout << x << "," << y << endl;
 	//左鍵雙擊放大部分
 	if (event == CV_EVENT_LBUTTONDBLCLK && DUBBLECLICK==1){
 		
@@ -46,6 +48,7 @@ void mymouse(int event, int x, int y, int flag, void* param)
 		ROIxEND = x * 4 + RedPicCPY_forUPSAMPLE.cols / (UPSAMPLERATE * 2);
 		ROIyBEGIN = y * 4 - RedPicCPY_forUPSAMPLE.rows / (UPSAMPLERATE * 2);
 		ROIyEND = y * 4 + RedPicCPY_forUPSAMPLE.rows / (UPSAMPLERATE * 2);
+
 
 		if (ROIxBEGIN < 0) ROIxBEGIN = 0;
 		else if (ROIxEND > RedPicCPY_forUPSAMPLE.cols)ROIxBEGIN = RedPicCPY_forUPSAMPLE.cols-RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1;
@@ -490,6 +493,32 @@ int main() {
 
 	int key = 0;
 	while (1) {
+		if (modeDC == 1){//若在放大模式下
+			if (key == 'w' || key == 'W'){//上
+				ROIyBEGIN = ROIyBEGIN - 500;
+				if (ROIyBEGIN < 0)ROIyBEGIN = 0;
+				ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
+				imshow("RedPic", ROI);
+			}
+			if (key == 's' || key == 'S'){//下
+				ROIyBEGIN = ROIyBEGIN + 500;
+				if (ROIyBEGIN >original.rows - ROI.rows - 1)ROIyBEGIN = original.rows - ROI.rows - 1;
+				ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
+				imshow("RedPic", ROI);
+			}
+			if (key == 'A' || key == 'a'){//左
+				ROIxBEGIN = ROIxBEGIN - 500;
+				if (ROIxBEGIN < 0)ROIxBEGIN = 0;
+				ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
+				imshow("RedPic", ROI);
+			}
+			if (key == 'D' || key == 'd'){//右
+				ROIxBEGIN = ROIxBEGIN + 500;
+				if (ROIxBEGIN >original.cols - ROI.cols - 1)ROIxBEGIN = original.cols - ROI.cols - 1;
+				ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
+				imshow("RedPic", ROI);
+			}
+		}
 		if (key != 27){
 			key = waitKey(5000);
 			if (key == '3') DUBBLECLICK = 1;
