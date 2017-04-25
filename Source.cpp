@@ -35,6 +35,8 @@ const int UPSAMPLERATE = 4;
 void mymouse(int event, int x, int y, int flag, void* param)
 {
 	static int oldx, oldy, DownX, DownY, oldDownX, oldDownY,now_down = 0, eraserDown, ROIxBEGIN, ROIxEND, ROIyBEGIN, ROIyEND;
+	int XupsampleBEGIN = x - 50, YupsampleBEGIN = y - 50, XupsampleEND = x+50,YupsampleEND=y+50;
+
 	cout << x << "," << y << endl;
 	//左鍵雙擊放大部分
 	if (event == CV_EVENT_LBUTTONDBLCLK && DUBBLECLICK==1){
@@ -88,10 +90,16 @@ void mymouse(int event, int x, int y, int flag, void* param)
 	else if(event == CV_EVENT_MOUSEMOVE && now_down == 1){
 		//若在一般模式下
 		if (modeDC == 0 && DUBBLECLICK == 0){
+			if (XupsampleBEGIN < 0)XupsampleBEGIN = 0;
+			else if (XupsampleEND>RedPic.cols)XupsampleEND = RedPic.cols;
+
+			if (YupsampleBEGIN < 0)YupsampleBEGIN = 0;
+			else if (YupsampleEND>RedPic.rows)YupsampleEND = RedPic.rows;
+
 			line(protectRegion, cvPoint(x * 4, y * 4), cvPoint(oldx * 4, oldy * 4), cvScalar(255), paint_size * 4, 8, 0);
 			//line(RedPic, cvPoint(x, y), cvPoint(oldx, oldy), cvScalar(0, 255, 0), paint_size, 8, 0);
-			for (int i = y - 50; i < y + 50; i++)
-			for (int j = x - 50; j < x + 50; j++){
+			for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
+			for (int j = XupsampleBEGIN; j < XupsampleEND; j++){
 				if ((int)protectRegion.at<uchar>(i*4, j*4) == 255){
 					RedPic.at<Vec3b>(i, j)[0] = 255;
 					RedPic.at<Vec3b>(i, j)[1] = 255;
@@ -112,22 +120,22 @@ void mymouse(int event, int x, int y, int flag, void* param)
 
 		
 
-			for (int i = (y - 50)*4; i < (y + 50)*4; i++)
-			for (int j = (x - 50)*4; j < (x + 50)*4; j++){
+			for (int i = YupsampleBEGIN * 4; i < YupsampleEND * 4; i++)
+			for (int j = XupsampleBEGIN * 4; j < XupsampleEND * 4; j++){
 				if ((int)protectRegion.at<uchar>(i , j ) == 255){
 					RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[0] = 255;
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[1] = 255;
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[2] = 255;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[1] = 255;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[2] = 255;
 				}
 				if ((int)original.at<uchar>(i , j ) == 0 && (int)protectRegion.at<uchar>(i , j ) == 255){
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[0] = 0;
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[1] = 0;
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[2] = 0;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[0] = 0;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[1] = 0;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[2] = 0;
 				}
 				if ((int)original.at<uchar>(i , j ) == 0 && (int)protectRegion.at<uchar>(i , j ) != 255){
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[0] = 40;
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[1] = 40;
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j )[2] = 255;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[0] = 40;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[1] = 40;
+					RedPicCPY_forUPSAMPLE.at<Vec3b>(i , j)[2] = 255;
 				}
 			}//for
 			oldx = x; oldy = y;
@@ -137,10 +145,17 @@ void mymouse(int event, int x, int y, int flag, void* param)
 		if (modeDC == 1){
 			DownX = ROIxBEGIN + x;
 			DownY = ROIyBEGIN + y;
+
+			if (XupsampleBEGIN < 0)XupsampleBEGIN = 0;
+			else if (XupsampleEND>ROI.cols)XupsampleEND = ROI.cols;
+
+			if (YupsampleBEGIN < 0)YupsampleBEGIN = 0;
+			else if (YupsampleEND>ROI.rows)YupsampleEND = ROI.rows;
+
 			line(protectRegion, cvPoint(DownX, DownY), cvPoint(oldDownX, oldDownY), cvScalar(255), paint_size, 8, 0);
 			//line(ROI, cvPoint(x, y), cvPoint(oldx, oldy), cvScalar(0, 255, 0), paint_size*2, 8, 0);
-			for (int i = y - 50; i < y + 50; i++)
-			for (int j = x - 50; j < x + 50; j++){
+			for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
+			for (int j = XupsampleBEGIN; j < XupsampleEND; j++){
 				if ((int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 255){
 					ROI.at<Vec3b>(i, j)[0] = 255;
 					ROI.at<Vec3b>(i, j)[1] = 255;
@@ -158,8 +173,8 @@ void mymouse(int event, int x, int y, int flag, void* param)
 				}
 			}//for
 			//line(RedPic, cvPoint(DownX / 4, DownY / 4), cvPoint(oldDownX / 4, oldDownY/4), cvScalar(0, 255, 0), paint_size/2, 8, 0);
-			for (int i = y - 50; i < y + 50; i++)
-			for (int j = x - 50; j < x + 50; j++){
+			for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
+			for (int j = XupsampleBEGIN; j <XupsampleEND; j++){
 				if ((int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 255){
 					RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[0] = 255;
 					RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[1] = 255;
@@ -425,31 +440,6 @@ int main() {
 	img = ~img;
 
 	//---------多加部分
-
-	/*
-	//彩圖
-	Mat color(original.rows, original.cols, CV_8UC3, Scalar(125, 125, 125));
-	for (int i = 0; i < original.rows; i++)
-	for (int j = 0; j < original.cols; j++){
-		if ((int)protectRegion.at<uchar>(i, j) == 255){
-			color.at<Vec3b>(i, j)[0] = 255;
-			color.at<Vec3b>(i, j)[1] = 255;
-			color.at<Vec3b>(i, j)[2] = 255;
-		}
-		if ((int)original.at<uchar>(i, j) == 0 && (int)protectRegion.at<uchar>(i, j) == 255){
-			color.at<Vec3b>(i, j)[0] = 0;
-			color.at<Vec3b>(i, j)[1] = 0;
-			color.at<Vec3b>(i, j)[2] = 0;
-		}
-		if ((int)original.at<uchar>(i, j) == 0 && (int)protectRegion.at<uchar>(i, j) != 255){
-			color.at<Vec3b>(i, j)[0] = 40;
-			color.at<Vec3b>(i, j)[1] = 40;
-			color.at<Vec3b>(i, j)[2] = 255;
-		}
-	}
-	imwrite("彩色.png", color);
-	*/
-
 	for (int i = 0; i < img.rows; i++)
 	for (int j = 0; j < img.cols; j++){
 		if ((int)protectRegion.at<uchar>(i, j) == 255){
@@ -491,7 +481,6 @@ int main() {
 
 	namedWindow("RedPic", 0);//參數0代表以可包含全部圖片的視窗大小開啟
 	imshow("RedPic", RedPic);
-	waitKey();
 
 	imwrite("Protect_Out.png", protectRegion);
 	imwrite("Final_Output.png", original);
