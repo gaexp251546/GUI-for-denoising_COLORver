@@ -63,7 +63,7 @@ namespace 測試視窗 {
 	
 	void mymouse(int event, int x, int y, int flag, void* param)
 	{
-		cout << "畫" << endl;
+
 		//邊界定論
 		if (x < paint_size / 2)x = paint_size / 2;
 		else if (x>RedPic.cols - paint_size / 2)x = RedPic.cols - paint_size / 2;
@@ -73,9 +73,7 @@ namespace 測試視窗 {
 		static int oldx, oldy, DownX, DownY, oldDownX, oldDownY, now_down = 0, eraserDown;
 		int XupsampleBEGIN = x - paint_size / 2, YupsampleBEGIN = y - paint_size / 2, XupsampleEND = x + paint_size / 2, YupsampleEND = y + paint_size / 2;
 
-
-
-		//左鍵雙擊放大部分
+		/*左鍵雙擊放大部分*/
 		if (event == CV_EVENT_LBUTTONDBLCLK && DUBBLECLICK == 1){
 
 			//回復區域圖片
@@ -86,8 +84,6 @@ namespace 測試視窗 {
 				RedPic.at<Vec3b>(i, j)[2] = RedPicCPYforCIRCLE.at<Vec3b>(i - YupsampleBEGIN, j - XupsampleBEGIN)[2];
 			}//for
 
-
-			cout << "雙擊放大" << endl;
 			modeDC = 1;
 			ROIxBEGIN = x * 4 - RedPicCPY_forUPSAMPLE.cols / (UPSAMPLERATE * 2);
 			ROIxEND = x * 4 + RedPicCPY_forUPSAMPLE.cols / (UPSAMPLERATE * 2);
@@ -95,17 +91,38 @@ namespace 測試視窗 {
 			ROIyEND = y * 4 + RedPicCPY_forUPSAMPLE.rows / (UPSAMPLERATE * 2);
 
 
-			if (ROIxBEGIN < 0) ROIxBEGIN = 0;
-			else if (ROIxEND > RedPicCPY_forUPSAMPLE.cols)ROIxBEGIN = RedPicCPY_forUPSAMPLE.cols - RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE;
+			//if (ROIxBEGIN < 0) ROIxBEGIN = 0;
+			//else if (ROIxEND > RedPicCPY_forUPSAMPLE.cols)ROIxBEGIN = RedPicCPY_forUPSAMPLE.cols - RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE;
+			//
+			//if (ROIyBEGIN< 0) ROIyBEGIN = 0;
+			//else if (ROIyEND > RedPicCPY_forUPSAMPLE.rows)ROIyBEGIN = RedPicCPY_forUPSAMPLE.rows - RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE;
 
-			if (ROIyBEGIN< 0) ROIyBEGIN = 0;
-			else if (ROIyEND > RedPicCPY_forUPSAMPLE.rows)ROIyBEGIN = RedPicCPY_forUPSAMPLE.rows - RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE;
+			//--
+			if (ROIyBEGIN < 0){
+				ROIyBEGIN = 0;
+				ROIyEND = RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1;
+			}
+
+			if (ROIyBEGIN >original.rows - RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1){
+				ROIyBEGIN = original.rows - RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1;
+				ROIyEND = original.rows - 1;
+			}
+
+			if (ROIxBEGIN < 0){
+				ROIxBEGIN = 0;
+				ROIxEND = RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1;
+			}
+
+			if (ROIxBEGIN >original.cols - RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1){
+				ROIxBEGIN = original.cols - RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1;
+				ROIxEND = original.cols - 1;
+			}
 
 			ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE));
 			DUBBLECLICK = 0;
 			imshow("RedPic", ROI);
 		}
-		//右鍵雙擊縮小部分
+		/*右鍵雙擊縮小部分*/
 		else if (event == CV_EVENT_RBUTTONDBLCLK&&DUBBLECLICK == 1){
 			//拷貝回復區域圖片
 			tempPIC = RedPic(Rect(x - paint_size / 2, y - paint_size / 2, paint_size, paint_size));
@@ -129,7 +146,7 @@ namespace 測試視窗 {
 		DownY = ROIyBEGIN + y;
 
 
-		//右鍵框選部分
+		/*右鍵框選部分*/
 		if (event == CV_EVENT_RBUTTONDOWN){
 			//若在一般模式下
 			if (DUBBLECLICK == 0 && modeDC == 0){
@@ -237,7 +254,6 @@ namespace 測試視窗 {
 		//在一般模式下
 		if (modeDC == 0 && now_down_for_circle == 0){
 			//拷貝回復區域圖片
-			cout << "進入一般模式" << endl;
 			tempPIC = RedPic(Rect(x - paint_size / 2, y - paint_size / 2, paint_size, paint_size));
 			RedPicCPYforCIRCLE = tempPIC.clone();
 			circle(RedPic, cvPoint(x, y), paint_size / 2 - 1, cvScalar(255, 255, 255));
@@ -245,7 +261,6 @@ namespace 測試視窗 {
 		/*FIXING*/
 		//在放大模式下
 		else if (modeDC == 1 && now_down_for_circle == 0){
-			cout << "進入放大模式" << endl;
 			//拷貝回復區域圖片
 			tempPIC = RedPicCPY_forUPSAMPLE(Rect(DownX - paint_size / 2, DownY - paint_size / 2, paint_size, paint_size));
 			OriginCPYforCIRCLE = tempPIC.clone();
@@ -253,13 +268,14 @@ namespace 測試視窗 {
 		}
 
 
-		//左鍵畫線部分
+		/*左鍵畫線部分*/
 		if (event == CV_EVENT_LBUTTONDOWN){
 			cout << "左鍵點下" << x << "," << y << "---" << oldx << "," << oldy << endl;
 			//若在一般模式下
 			if (modeDC == 0 && DUBBLECLICK == 0){
 				circle(RedPicCPY_forUPSAMPLE, cvPoint(x * 4, y * 4), paint_size * 2, cvScalar(0, 0, 255));
 				oldx = x; oldy = y;
+				//oldestx = x, oldesty = y;
 				now_down = 1;
 			}
 
@@ -275,6 +291,93 @@ namespace 測試視窗 {
 		else if (event == CV_EVENT_LBUTTONUP){
 			now_down_for_circle = 0;
 			now_down = 0;
+
+			//修補劃線後破損,使用放掉後補償
+			//在一般模式下
+			if (modeDC == 0 && DUBBLECLICK == 0){
+				for (int i = 0; i <RedPic.rows; i++)
+				for (int j = 0; j <RedPic.cols; j++){
+					if ((int)protectRegion.at<uchar>(i * 4, j * 4) == 255){
+						RedPic.at<Vec3b>(i, j)[0] = 255;
+						RedPic.at<Vec3b>(i, j)[1] = 255;
+						RedPic.at<Vec3b>(i, j)[2] = 255;
+					}
+					if ((int)original.at<uchar>(i * 4, j * 4) == 0 && (int)protectRegion.at<uchar>(i * 4, j * 4) == 255){
+						RedPic.at<Vec3b>(i, j)[0] = 0;
+						RedPic.at<Vec3b>(i, j)[1] = 0;
+						RedPic.at<Vec3b>(i, j)[2] = 0;
+					}
+					if ((int)original.at<uchar>(i * 4, j * 4) == 0 && (int)protectRegion.at<uchar>(i * 4, j * 4) != 255){
+						RedPic.at<Vec3b>(i, j)[0] = 40;
+						RedPic.at<Vec3b>(i, j)[1] = 40;
+						RedPic.at<Vec3b>(i, j)[2] = 255;
+					}
+				}
+
+				for (int i = 0; i < protectRegion.rows; i++)
+				for (int j = 0; j < protectRegion.cols; j++){
+					if ((int)protectRegion.at<uchar>(i, j) == 255){
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[0] = 255;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[1] = 255;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[2] = 255;
+					}
+					if ((int)original.at<uchar>(i, j) == 0 && (int)protectRegion.at<uchar>(i, j) == 255){
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[0] = 0;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[1] = 0;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[2] = 0;
+					}
+					if ((int)original.at<uchar>(i, j) == 0 && (int)protectRegion.at<uchar>(i, j) != 255){
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[0] = 40;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[1] = 40;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[2] = 255;
+					}
+				}//for
+				imshow("RedPic", RedPic);
+			}
+			//在放大模式下
+			else if (modeDC == 1){
+				//cout << "a=" << ROIyBEGIN << "," << ROIyEND << "," << ROIxBEGIN << "," << ROIxEND << endl;
+				for (int i = ROIyBEGIN; i < ROIyEND; i++)
+				for (int j = ROIxBEGIN; j < ROIxEND; j++){
+					if ((int)protectRegion.at<uchar>(i, j) == 255){
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[0] = 255;
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[1] = 255;
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[2] = 255;
+					}
+					if ((int)original.at<uchar>(i, j) == 0 && (int)protectRegion.at<uchar>(i, j) == 255){
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[0] = 0;
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[1] = 0;
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[2] = 0;
+					}
+					if ((int)original.at<uchar>(i, j) == 0 && (int)protectRegion.at<uchar>(i, j) != 255){
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[0] = 40;
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[1] = 40;
+						ROI.at<Vec3b>(i - ROIyBEGIN, j - ROIxBEGIN)[2] = 255;
+					}
+				}//for
+
+				/*error sloved*/
+				for (int i = 0; i < RedPic.rows; i++)
+				for (int j = 0; j < RedPic.cols; j++){
+					if ((int)protectRegion.at<uchar>(i * 4, j * 4) == 255){
+						RedPic.at<Vec3b>((i), (j))[0] = 255;
+						RedPic.at<Vec3b>((i), (j))[1] = 255;
+						RedPic.at<Vec3b>((i), (j))[2] = 255;
+					}
+					if ((int)original.at<uchar>(i * 4, j * 4) == 0 && (int)protectRegion.at<uchar>(i * 4, j * 4) == 255){
+						RedPic.at<Vec3b>((i), (j))[0] = 0;
+						RedPic.at<Vec3b>((i), (j))[1] = 0;
+						RedPic.at<Vec3b>((i), (j))[2] = 0;
+					}
+					if ((int)original.at<uchar>(i * 4, j * 4) == 0 && (int)protectRegion.at<uchar>(i * 4, j * 4) != 255){
+						RedPic.at<Vec3b>((i), (j))[0] = 40;
+						RedPic.at<Vec3b>((i), (j))[1] = 40;
+						RedPic.at<Vec3b>((i), (j))[2] = 255;
+					}
+				}//for
+
+				imshow("RedPic", ROI);
+			}
 		}
 		else if (event == CV_EVENT_MOUSEMOVE && now_down == 1){
 			now_down_for_circle = 1;
@@ -334,13 +437,15 @@ namespace 測試視窗 {
 			//若在放大模式下
 			if (modeDC == 1){
 				if (XupsampleBEGIN < 0)XupsampleBEGIN = 0;
-				else if (XupsampleEND>ROI.cols)XupsampleEND = ROI.cols;
+				else if (XupsampleEND>RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE)XupsampleEND = RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE;
 
 				if (YupsampleBEGIN < 0)YupsampleBEGIN = 0;
-				else if (YupsampleEND>ROI.rows)YupsampleEND = ROI.rows;
+				else if (YupsampleEND>RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE)YupsampleEND = RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE;
 
 				line(protectRegion, cvPoint(DownX, DownY), cvPoint(oldDownX, oldDownY), cvScalar(255), paint_size, 8, 0);
 				//line(ROI, cvPoint(x, y), cvPoint(oldx, oldy), cvScalar(0, 255, 0), paint_size*2, 8, 0);
+				//line(RedPic, cvPoint(DownX / 4, DownY / 4), cvPoint(oldDownX / 4, oldDownY/4), cvScalar(0, 255, 0), paint_size/2, 8, 0);
+
 				for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
 				for (int j = XupsampleBEGIN; j < XupsampleEND; j++){
 					if ((int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 255){
@@ -359,25 +464,26 @@ namespace 測試視窗 {
 						ROI.at<Vec3b>(i, j)[2] = 255;
 					}
 				}//for
-				//line(RedPic, cvPoint(DownX / 4, DownY / 4), cvPoint(oldDownX / 4, oldDownY/4), cvScalar(0, 255, 0), paint_size/2, 8, 0);
-				for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
-				for (int j = XupsampleBEGIN; j <XupsampleEND; j++){
-					if ((int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 255){
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[0] = 255;
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[1] = 255;
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[2] = 255;
-					}
-					if ((int)original.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 0 && (int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 255){
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[0] = 0;
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[1] = 0;
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[2] = 0;
-					}
-					if ((int)original.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 0 && (int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) != 255){
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[0] = 40;
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[1] = 40;
-						RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[2] = 255;
-					}
-				}//for
+				/*error / maybe we don't need this*/
+				//for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
+				//for (int j = XupsampleBEGIN; j < XupsampleEND; j++){
+				//	if ((int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 255){
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[0] = 255;
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[1] = 255;
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[2] = 255;
+				//	}
+				//	if ((int)original.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 0 && (int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 255){
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[0] = 0;
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[1] = 0;
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[2] = 0;
+				//	}
+				//	if ((int)original.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) == 0 && (int)protectRegion.at<uchar>(i + ROIyBEGIN, j + ROIxBEGIN) != 255){
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[0] = 40;
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[1] = 40;
+				//		RedPic.at<Vec3b>((i + ROIyBEGIN) / UPSAMPLERATE, (j + ROIxBEGIN) / UPSAMPLERATE)[2] = 255;
+				//	}
+				//}//for
+
 				oldx = x; oldy = y;
 				oldDownX = DownX; oldDownY = DownY;
 
@@ -429,6 +535,19 @@ namespace 測試視窗 {
 				oldx = x; oldy = y;
 			}
 
+			/*測試speed up 只找鄰近點!?*/
+			//for (int i = YupsampleBEGIN * 4; i < YupsampleEND * 4; i++)
+			//for (int j = XupsampleBEGIN * 4; j < XupsampleEND * 4; j++){
+			//	if ((int)BinaryMapForProtectMap.at<uchar>(i, j) == 1)//保護區圖的橡皮擦回復
+			//		protectRegion.at<uchar>(i, j) = ProtectRegionCPY.at<uchar>(i, j);
+
+			//	if ((int)BinaryMapForUI.at<uchar>(i / 4, j / 4) == 1)//介面區圖的橡皮擦回復
+			//		RedPic.at<Vec3b>(i / 4, j / 4) = RedPicCPY.at<Vec3b>(i / 4, j / 4);
+
+			//	if ((int)BinaryMapForUPsample.at<uchar>(i, j) == 1){//放大區圖的橡皮擦回復
+			//		RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j) = RedPicCPY_forUPSAMPLEeraser.at<Vec3b>(i, j);
+			//	}
+			//}
 
 			for (int i = 0; i < BinaryMapForProtectMap.rows; i++)
 			for (int j = 0; j < BinaryMapForProtectMap.cols; j++){
@@ -470,9 +589,6 @@ namespace 測試視窗 {
 
 			//若沒有在畫圖時
 			if (modeDC == 0 && now_down_for_circle == 0){
-				cout << "回復" << endl;
-
-
 				//回復區域圖片
 				for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
 				for (int j = XupsampleBEGIN; j < XupsampleEND; j++){
@@ -483,7 +599,6 @@ namespace 測試視窗 {
 			}
 		}
 		now_down_for_circle = 0;
-
 	}
 	//--
 	/// <summary>
@@ -793,30 +908,44 @@ namespace 測試視窗 {
 					 if (modeDC == 1){//若在放大模式下
 						 if (key == 'w' || key == 'W'){//上
 							 ROIyBEGIN = ROIyBEGIN - 500;
+							 ROIyEND = ROIyEND - 500;
 							 if (ROIyBEGIN < 0)ROIyBEGIN = 0;
+							 if (ROIyEND <RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1)ROIyEND = RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1;
 							 ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
 							 imshow("RedPic", ROI);
 						 }
 						 if (key == 's' || key == 'S'){//下
 							 ROIyBEGIN = ROIyBEGIN + 500;
+							 ROIyEND = ROIyEND + 500;
 							 if (ROIyBEGIN >original.rows - ROI.rows - 1)ROIyBEGIN = original.rows - ROI.rows - 1;
+							 if (ROIyEND > original.rows - 1)ROIyEND = original.rows - 1;
 							 ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
 							 imshow("RedPic", ROI);
 						 }
 						 if (key == 'A' || key == 'a'){//左
 							 ROIxBEGIN = ROIxBEGIN - 500;
+							 ROIxEND = ROIxEND - 500;
 							 if (ROIxBEGIN < 0)ROIxBEGIN = 0;
+							 if (ROIxEND < RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1)ROIxEND = RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1;
 							 ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
 							 imshow("RedPic", ROI);
 						 }
 						 if (key == 'D' || key == 'd'){//右
 							 ROIxBEGIN = ROIxBEGIN + 500;
+							 ROIxEND = ROIxEND + 500;
 							 if (ROIxBEGIN >original.cols - ROI.cols - 1)ROIxBEGIN = original.cols - ROI.cols - 1;
+							 if (ROIxEND > original.cols - 1)ROIxEND = original.cols - 1;
 							 ROI = RedPicCPY_forUPSAMPLE(Rect(ROIxBEGIN, ROIyBEGIN, RedPicCPY_forUPSAMPLE.cols / UPSAMPLERATE - 1, RedPicCPY_forUPSAMPLE.rows / UPSAMPLERATE - 1));
 							 imshow("RedPic", ROI);
 						 }
 					 }
 					 if (key != 27){
+						 if (key == '2'&&paint_size <= scollbarMax - 30)
+							 paint_size += 30;
+
+						 if (key == '1'&&paint_size >= scollbarMin + 30)
+							 paint_size -= 30;
+
 						 key = waitKey(1);
 						 if (key == '3') DUBBLECLICK = 1;
 					 }
