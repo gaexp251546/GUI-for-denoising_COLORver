@@ -250,6 +250,113 @@ namespace 測試視窗 {
 			}
 		}
 
+		//中鍵橡皮擦部分
+		else if (event == CV_EVENT_MBUTTONDOWN){
+			eraserDown = 1;
+			//若在一般模式下
+			if (modeDC == 0 && DUBBLECLICK == 0){
+				oldx = x; oldy = y;
+				//oldestx = x, oldesty = y;
+			}
+
+			//若在放大模式下
+			else if (modeDC == 1){
+				oldx = x; oldy = y;
+				oldDownX = DownX; oldDownY = DownY;
+			}
+		}
+		else if (event == CV_EVENT_MBUTTONUP&&DUBBLECLICK == 0){
+			now_down_for_circle = 1;
+			eraserDown = 0;
+
+			//修補劃線後破損,使用放掉後補償
+			for (int i = 0; i < RedPic.rows; i++)
+			for (int j = 0; j < RedPic.cols; j++){
+
+				if ((int)protectRegion.at<uchar>(i * 4, j * 4) == 0){
+					if (((int)RedPic.at<Vec3b>(i, j)[0] + (int)RedPic.at<Vec3b>(i, j)[1] + (int)RedPic.at<Vec3b>(i, j)[2]) / 3 <125){
+						RedPic.at<Vec3b>(i, j)[0] = 40;
+						RedPic.at<Vec3b>(i, j)[1] = 40;
+						RedPic.at<Vec3b>(i, j)[2] = 255;
+					}
+					else{
+						RedPic.at<Vec3b>(i, j)[0] = 125;
+						RedPic.at<Vec3b>(i, j)[1] = 125;
+						RedPic.at<Vec3b>(i, j)[2] = 125;
+					}
+				}
+			}
+			for (int i = 0; i < RedPicCPY_forUPSAMPLE.rows; i++)
+			for (int j = 0; j < RedPicCPY_forUPSAMPLE.cols; j++){
+				if ((int)protectRegion.at<uchar>(i, j) == 0){
+					if (((int)RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[0] + (int)RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[1] + (int)RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[2]) / 3 <125){
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[0] = 40;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[1] = 40;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[2] = 255;
+					}
+					else{
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[0] = 125;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[1] = 125;
+						RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j)[2] = 125;
+					}
+				}
+			}//for
+		}
+		else if (event == CV_EVENT_MOUSEMOVE && eraserDown == 1){
+			//若在一般模式下
+			if (DUBBLECLICK == 0 && modeDC == 0){
+				line(protectRegion, cvPoint(x * 4, y * 4), cvPoint(oldx * 4, oldy * 4), cvScalar(0), paint_size * 4, 8, 0);
+
+				/*for (int i = (y - paint_size/2)*4; i < (y + paint_size/2)*4; i++)
+				for (int j = (x - paint_size/2)*4; j < (x + paint_size/2)*4; j++){
+				protectRegion.at<uchar>(i, j) = 0;
+				}*/
+
+				for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
+				for (int j = XupsampleBEGIN; j < XupsampleEND; j++){
+					//這裡再加個圓公式或著距離公式 小於等於半徑
+					if (pow(i - y, 2) + pow(j - x, 2) <= pow(paint_size / 2, 2)){
+						if (((int)RedPic.at<Vec3b>(i, j)[0] + (int)RedPic.at<Vec3b>(i, j)[1] + (int)RedPic.at<Vec3b>(i, j)[2]) / 3 <125){
+							RedPic.at<Vec3b>(i, j)[0] = 40;
+							RedPic.at<Vec3b>(i, j)[1] = 40;
+							RedPic.at<Vec3b>(i, j)[2] = 255;
+						}
+						else{
+							RedPic.at<Vec3b>(i, j)[0] = 125;
+							RedPic.at<Vec3b>(i, j)[1] = 125;
+							RedPic.at<Vec3b>(i, j)[2] = 125;
+						}
+					}
+				}
+			}
+
+
+			//若在放大模式下
+			if (modeDC == 1){
+				line(protectRegion, cvPoint(DownX, DownY), cvPoint(oldDownX, oldDownY), cvScalar(0), paint_size, 8, 0);
+
+				for (int i = YupsampleBEGIN; i < YupsampleEND; i++)
+				for (int j = XupsampleBEGIN; j < XupsampleEND; j++){
+					//這裡再加個圓公式或著距離公式 小於等於半徑
+					if (pow(i - y, 2) + pow(j - x, 2) <= pow(paint_size / 2, 2)){
+						if (((int)ROI.at<Vec3b>(i, j)[0] + (int)ROI.at<Vec3b>(i, j)[1] + (int)ROI.at<Vec3b>(i, j)[2]) / 3 <125){
+							ROI.at<Vec3b>(i, j)[0] = 40;
+							ROI.at<Vec3b>(i, j)[1] = 40;
+							ROI.at<Vec3b>(i, j)[2] = 255;
+						}
+						else{
+							ROI.at<Vec3b>(i, j)[0] = 125;
+							ROI.at<Vec3b>(i, j)[1] = 125;
+							ROI.at<Vec3b>(i, j)[2] = 125;
+						}
+					}
+				}//end for
+			}
+			oldDownX = DownX; oldDownY = DownY;
+			oldx = x; oldy = y;
+		}
+
+
 		/*為了讓游標有圓圈顯示*/
 		//在一般模式下
 		if (modeDC == 0 && now_down_for_circle == 0){
@@ -270,10 +377,9 @@ namespace 測試視窗 {
 
 		/*左鍵畫線部分*/
 		if (event == CV_EVENT_LBUTTONDOWN){
-			cout << "左鍵點下" << x << "," << y << "---" << oldx << "," << oldy << endl;
 			//若在一般模式下
 			if (modeDC == 0 && DUBBLECLICK == 0){
-				circle(RedPicCPY_forUPSAMPLE, cvPoint(x * 4, y * 4), paint_size * 2, cvScalar(0, 0, 255));
+
 				oldx = x; oldy = y;
 				//oldestx = x, oldesty = y;
 				now_down = 1;
@@ -281,8 +387,6 @@ namespace 測試視窗 {
 
 			//若在放大模式下
 			else if (modeDC == 1){
-				circle(ROI, cvPoint(x, y), paint_size * 2, cvScalar(0, 0, 255));
-				circle(RedPic, cvPoint(DownX / 4, DownY / 4), paint_size / 2, cvScalar(0, 0, 255));
 				oldx = x; oldy = y;
 				oldDownX = DownX; oldDownY = DownY;
 				now_down = 1;
@@ -334,7 +438,7 @@ namespace 測試視窗 {
 				}//for
 				imshow("RedPic", RedPic);
 			}
-			//在放大模式下
+			//若在放大模式下
 			else if (modeDC == 1){
 				//cout << "a=" << ROIyBEGIN << "," << ROIyEND << "," << ROIxBEGIN << "," << ROIxEND << endl;
 				for (int i = ROIyBEGIN; i < ROIyEND; i++)
@@ -492,76 +596,6 @@ namespace 測試視窗 {
 
 
 
-		//中鍵橡皮擦部分
-		else if (event == CV_EVENT_MBUTTONDOWN){
-			eraserDown = 1;
-			//若在一般模式下
-			if (DUBBLECLICK == 0 && modeDC == 0){
-				oldx = x; oldy = y;
-
-			}
-			//若在放大模式下
-			else if (modeDC == 1){
-				oldDownX = DownX; oldDownY = DownY;
-				oldx = x; oldy = y;
-			}
-		}
-		else if (event == CV_EVENT_MBUTTONUP&&DUBBLECLICK == 0){
-			eraserDown = 0;
-			//把binaryMap歸零
-			Mat TempForBinaryMap(RedPic.rows, RedPic.cols, CV_8UC1, Scalar(0));
-			Mat TempForBinaryMap_protectVER(original.rows, original.cols, CV_8UC1, Scalar(0));
-			Mat TempForBinaryMap_Upsample(original.rows, original.cols, CV_8UC1, Scalar(0));
-			BinaryMapForUI = TempForBinaryMap.clone();
-			BinaryMapForProtectMap = TempForBinaryMap_protectVER.clone();
-			BinaryMapForUPsample = TempForBinaryMap_Upsample.clone();
-		}
-		else if (event == CV_EVENT_MOUSEMOVE && eraserDown == 1){
-			//若在一般模式下
-			if (DUBBLECLICK == 0 && modeDC == 0){
-				line(BinaryMapForUI, cvPoint(x, y), cvPoint(oldx, oldy), cvScalar(1), paint_size, 8, 0);
-				line(BinaryMapForProtectMap, cvPoint(x * 4, y * 4), cvPoint(oldx * 4, oldy * 4), cvScalar(1), paint_size * 4, 8, 0);
-				line(BinaryMapForUPsample, cvPoint(x * 4, y * 4), cvPoint(oldx * 4, oldy * 4), cvScalar(1), paint_size * 4, 8, 0);
-				oldx = x; oldy = y;
-			}
-
-			//若在放大模式下
-			if (modeDC == 1){
-				line(BinaryMapForUPsample, cvPoint(DownX, DownY), cvPoint(oldDownX, oldDownY), cvScalar(1), paint_size * 2, 8, 0);
-				line(BinaryMapForUI, cvPoint(DownX / 4, DownY / 4), cvPoint(oldDownX / 4, oldDownY / 4), cvScalar(1), paint_size / 2, 8, 0);
-				line(BinaryMapForProtectMap, cvPoint(DownX, DownY), cvPoint(oldDownX, oldDownY), cvScalar(1), paint_size * 2, 8, 0);
-
-				oldDownX = DownX; oldDownY = DownY;
-				oldx = x; oldy = y;
-			}
-
-			/*測試speed up 只找鄰近點!?*/
-			//for (int i = YupsampleBEGIN * 4; i < YupsampleEND * 4; i++)
-			//for (int j = XupsampleBEGIN * 4; j < XupsampleEND * 4; j++){
-			//	if ((int)BinaryMapForProtectMap.at<uchar>(i, j) == 1)//保護區圖的橡皮擦回復
-			//		protectRegion.at<uchar>(i, j) = ProtectRegionCPY.at<uchar>(i, j);
-
-			//	if ((int)BinaryMapForUI.at<uchar>(i / 4, j / 4) == 1)//介面區圖的橡皮擦回復
-			//		RedPic.at<Vec3b>(i / 4, j / 4) = RedPicCPY.at<Vec3b>(i / 4, j / 4);
-
-			//	if ((int)BinaryMapForUPsample.at<uchar>(i, j) == 1){//放大區圖的橡皮擦回復
-			//		RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j) = RedPicCPY_forUPSAMPLEeraser.at<Vec3b>(i, j);
-			//	}
-			//}
-
-			for (int i = 0; i < BinaryMapForProtectMap.rows; i++)
-			for (int j = 0; j < BinaryMapForProtectMap.cols; j++){
-				if ((int)BinaryMapForProtectMap.at<uchar>(i, j) == 1)//保護區圖的橡皮擦回復
-					protectRegion.at<uchar>(i, j) = ProtectRegionCPY.at<uchar>(i, j);
-
-				if ((int)BinaryMapForUI.at<uchar>(i / 4, j / 4) == 1)//介面區圖的橡皮擦回復
-					RedPic.at<Vec3b>(i / 4, j / 4) = RedPicCPY.at<Vec3b>(i / 4, j / 4);
-
-				if ((int)BinaryMapForUPsample.at<uchar>(i, j) == 1){//放大區圖的橡皮擦回復
-					RedPicCPY_forUPSAMPLE.at<Vec3b>(i, j) = RedPicCPY_forUPSAMPLEeraser.at<Vec3b>(i, j);
-				}
-			}
-		}
 
 
 		//顯示圖片部分
@@ -787,7 +821,7 @@ namespace 測試視窗 {
 				 progressBar1->Value = 15;
 
 				 img = ~img;//黑變白
-				 gRemoveSize = ((double)80 / (6155 * 6435)) * (img.rows * img.cols);
+				 gRemoveSize = 2*((double)80 / (6155 * 6435)) * (img.rows * img.cols);
 
 
 				 int nLabels = connectedComponentsWithStats(img, labelImage, stats, centroids, 8, CV_32S);
@@ -898,6 +932,12 @@ namespace 測試視窗 {
 								 original.at<uchar>(h, w) = 255;
 						 } // for
 						 //----
+						 for (int i = 0; i < protectRegion.rows; i++)
+						 for (int j = 0; j < protectRegion.cols; j++){
+							 if ((int)protectRegion.at<uchar>(i, j) == 0){
+								 original.at<uchar>(i, j) = 255;
+							 }
+						 }
 
 						 imwrite("Protect_Out.png", protectRegion);
 						 imwrite("Final_Output.png", original);
@@ -986,7 +1026,7 @@ private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e
 			// hScrollBar1->Value = 250;
 }
 private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
-			 MessageBox::Show("Mouse event:\n1.Left click mouse ,drag and drop to draw modifying curve. \n2.Right click mouse ,drag and drop to draw modifying rectangle.\n3.Middle click mouse ,drag and drop to erase places you were modifying.\nKeyboard event:\n1.Press number 1 to shrink down the painting brush size.\n2.Press number 2 to enlarge the painting brush size.\nPress Esc to store this work", "manual");
+			 MessageBox::Show("功能表:\n-----------------------\na.滑鼠部分:\n1.滑鼠左鍵拖曳:畫出保護區\n2.滑鼠右鍵拖曳:方形框出保護區\n3.滑鼠中鍵拖曳:橡皮擦(將保護區變成非保護區)\n4.鍵盤按住'3'並雙擊滑鼠左鍵:圖片放大(此程式僅提供一倍放大，放大後請勿再放大)\n5.鍵盤按住'3'並雙擊滑鼠右鍵:圖片縮小(此程式僅提供一倍縮小，所以請在放大模式時使用)\n6.滑鼠點擊右上方關閉:儲存檔案並關閉\n-----------------------\nb.鍵盤部分:\n1.數字鍵'1':縮小畫筆/橡皮擦範圍\n2.數字鍵'2':放大畫筆/橡皮擦範圍\n3.數字鍵'3':長按並配合滑鼠雙擊有放大縮小功能\n4.鍵盤'w'鍵:放大時可將視窗上移\n5.鍵盤's'鍵:放大時可將視窗下移\n6.鍵盤'a'鍵:放大時可將視窗左移\n7.鍵盤'd'鍵:放大時可將視窗右移\n-----------------------\nc.您可能會遇到的問題:\nQ1.按了'3'也雙擊了卻沒放大/縮小:\nA1:請將您的輸入法改成英文，並且'長'按'3'", "manual");
 }
 private: System::Void progressBar1_Click(System::Object^  sender, System::EventArgs^  e) {
 }
